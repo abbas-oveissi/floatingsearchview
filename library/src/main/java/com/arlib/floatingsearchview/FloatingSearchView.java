@@ -114,6 +114,7 @@ public class FloatingSearchView extends FrameLayout {
     public final static int LEFT_ACTION_MODE_SHOW_HOME = 3;
     public final static int LEFT_ACTION_MODE_NO_LEFT_ACTION = 4;
     private final static int LEFT_ACTION_MODE_NOT_SET = -1;
+    private int directionMultiplier=1;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({LEFT_ACTION_MODE_SHOW_HAMBURGER, LEFT_ACTION_MODE_SHOW_SEARCH,
@@ -699,22 +700,26 @@ public class FloatingSearchView extends FrameLayout {
 
     //ensures that the end margin of the search input is according to Material specs
     private void handleOnVisibleMenuItemsWidthChanged(int menuItemsWidth) {
+
+        if(isRTL())
+            directionMultiplier=-1;
+
         if (menuItemsWidth == 0) {
-            mClearButton.setTranslationX(-Util.dpToPx(4));
+            mClearButton.setTranslationX(directionMultiplier*-Util.dpToPx(4));
             int paddingRight = Util.dpToPx(4);
             if (mIsFocused) {
                 paddingRight += Util.dpToPx(CLEAR_BTN_WIDTH_DP);
             } else {
                 paddingRight += Util.dpToPx(14);
             }
-            mSearchInput.setPadding(0, 0, paddingRight, 0);
+            mSearchInput.setPaddingRelative(0, 0, paddingRight, 0);
         } else {
-            mClearButton.setTranslationX(-menuItemsWidth);
+            mClearButton.setTranslationX(directionMultiplier*-menuItemsWidth);
             int paddingRight = menuItemsWidth;
             if (mIsFocused) {
                 paddingRight += Util.dpToPx(CLEAR_BTN_WIDTH_DP);
             }
-            mSearchInput.setPadding(0, 0, paddingRight, 0);
+            mSearchInput.setPaddingRelative(0, 0, paddingRight, 0);
         }
     }
 
@@ -899,6 +904,11 @@ public class FloatingSearchView extends FrameLayout {
     }
 
     private void refreshLeftIcon() {
+
+
+        if(isRTL())
+            directionMultiplier=-1;
+
         int leftActionWidthAndMarginLeft = Util.dpToPx(LEFT_MENU_WIDTH_AND_MARGIN_START_DP);
         int queryTranslationX = 0;
 
@@ -917,7 +927,7 @@ public class FloatingSearchView extends FrameLayout {
                 break;
             case LEFT_ACTION_MODE_NO_LEFT_ACTION:
                 mLeftAction.setVisibility(View.INVISIBLE);
-                queryTranslationX = -leftActionWidthAndMarginLeft;
+                queryTranslationX =queryTranslationX-(directionMultiplier* leftActionWidthAndMarginLeft);
                 break;
         }
         mSearchInputParent.setTranslationX(queryTranslationX);
@@ -1558,6 +1568,10 @@ public class FloatingSearchView extends FrameLayout {
 
     private void transitionOutLeftSection(boolean withAnim) {
 
+        if(isRTL())
+            directionMultiplier=-1;
+
+
         switch (mLeftActionMode) {
             case LEFT_ACTION_MODE_SHOW_HAMBURGER:
                 closeMenuDrawable(mMenuBtnDrawable, withAnim);
@@ -1573,7 +1587,7 @@ public class FloatingSearchView extends FrameLayout {
 
                 if (withAnim) {
                     ObjectAnimator searchInputTransXAnim = ViewPropertyObjectAnimator.animate(mSearchInputParent)
-                            .translationX(-Util.dpToPx(LEFT_MENU_WIDTH_AND_MARGIN_START_DP)).get();
+                            .translationX(directionMultiplier*-Util.dpToPx(LEFT_MENU_WIDTH_AND_MARGIN_START_DP)).get();
 
                     ObjectAnimator scaleXArrowAnim = ViewPropertyObjectAnimator.animate(mLeftAction).scaleX(0.5f).get();
                     ObjectAnimator scaleYArrowAnim = ViewPropertyObjectAnimator.animate(mLeftAction).scaleY(0.5f).get();

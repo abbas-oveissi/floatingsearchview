@@ -21,6 +21,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.view.SupportMenuInflater;
 import android.support.v7.view.menu.MenuBuilder;
 import android.support.v7.view.menu.MenuItemImpl;
@@ -263,6 +265,8 @@ public class MenuView extends LinearLayout {
         return (ImageView) LayoutInflater.from(getContext()).inflate(R.layout.overflow_action_item_layout, this, false);
     }
 
+    int directionMultiplier=1;
+
     /**
      * Hides all the menu items flagged with "ifRoom"
      *
@@ -314,11 +318,16 @@ public class MenuView extends LinearLayout {
 
         anims = new ArrayList<>();
 
+
+        if(isRTL())
+            directionMultiplier=-1;
+
+
         //add anims for moving showAlwaysItem views to the right
         for (int i = 0; i < actionItemIndex; i++) {
 
             final View currentChild = getChildAt(i);
-            final float destTransX = (ACTION_DIMENSION_PX * diff) - (mHasOverflow ? Util.dpToPx(8) : 0);
+            final float destTransX = (ACTION_DIMENSION_PX * diff) -(directionMultiplier* (mHasOverflow ? Util.dpToPx(8) : 0));
             anims.add(ViewPropertyObjectAnimator.animate(currentChild)
                     .setDuration(withAnim ? HIDE_IF_ROOM_ITEMS_ANIM_DURATION : 0)
                     .setInterpolator(new AccelerateInterpolator())
@@ -326,10 +335,10 @@ public class MenuView extends LinearLayout {
                         @Override
                         public void onAnimationEnd(Animator animation) {
 
-                            currentChild.setTranslationX(destTransX);
+                            currentChild.setTranslationX(directionMultiplier* destTransX);
                         }
                     })
-                    .translationXBy(destTransX).get());
+                    .translationXBy(directionMultiplier* destTransX).get());
         }
 
         //add anims for moving to right and/or zooming out previously shown items
@@ -345,9 +354,9 @@ public class MenuView extends LinearLayout {
                             @Override
                             public void onAnimationEnd(Animator animation) {
 
-                                currentView.setTranslationX(ACTION_DIMENSION_PX);
+                                currentView.setTranslationX(directionMultiplier*ACTION_DIMENSION_PX);
                             }
-                        }).translationXBy(ACTION_DIMENSION_PX).get());
+                        }).translationXBy(directionMultiplier*ACTION_DIMENSION_PX).get());
             }
 
             //scale and zoom out
@@ -557,5 +566,11 @@ public class MenuView extends LinearLayout {
 
         //clear anims if any to avoid leak
         cancelChildAnimListAndClear();
+    }
+
+    private boolean isRTL() {
+
+        Configuration config = getResources().getConfiguration();
+        return ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL;
     }
 }
